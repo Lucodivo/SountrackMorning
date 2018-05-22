@@ -3,6 +3,7 @@ package com.inasweaterpoorlyknit.soundtrackmorning
 import android.content.Context
 import android.graphics.Color
 import android.support.v7.widget.RecyclerView
+import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,15 +16,22 @@ class ExistingAlarmsRecyclerViewAdapter(val items : ArrayList<Alarm>, val contex
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val alarm = items.get(position)
+        val alarm = items[position]
 
-        holder.triggerTime.text = alarm.time
+        var timeText = alarm.getTimeText(DateFormat.is24HourFormat(context))
 
-        if(alarm.state == AlarmState.ON) {
+        holder.triggerTime.text = timeText
+
+        if(alarm.isActive) {
             holder.view.setBackgroundColor(Color.GREEN)
         } else {
             holder.view.setBackgroundColor(Color.RED)
         }
+
+        holder.view.setOnClickListener( {
+            items[position] = Alarm(alarm.hourOfDay, alarm.minute, !alarm.isActive)
+            notifyItemChanged(position)
+        } )
     }
 
     override fun getItemCount(): Int {

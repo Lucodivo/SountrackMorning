@@ -1,11 +1,24 @@
 package com.inasweaterpoorlyknit.soundtrackmorning
 
+import android.app.TimePickerDialog
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
+import android.text.format.DateFormat
+import android.widget.TimePicker
+import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
+import java.util.Calendar;
+
+class MainActivity : AppCompatActivity(), TimePickerDialog.OnTimeSetListener {
+    private val alarmsList = ArrayList<Alarm>()
+
+    override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
+        toast("hour: $hourOfDay minute: $minute")
+        alarmsList.add(Alarm(hourOfDay, minute, true))
+        existing_alarms_list.adapter.notifyItemInserted(alarmsList.size)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -15,13 +28,14 @@ class MainActivity : AppCompatActivity() {
         val newString = stringFromJNI() + doubleFromJNI()
         title = newString
 
-        val alarmsList = ArrayList<Alarm>()
-        alarmsList.add(Alarm("8:01AM", AlarmState.ON))
-        alarmsList.add(Alarm("8:02AM", AlarmState.OFF))
-        alarmsList.add(Alarm("8:03AM", AlarmState.ON))
+        alarmsList.add(Alarm(8, 1, true))
+        alarmsList.add(Alarm(8, 2, false))
+        alarmsList.add(Alarm(8, 3, true))
 
         existing_alarms_list.layoutManager = LinearLayoutManager(this)
         existing_alarms_list.adapter = ExistingAlarmsRecyclerViewAdapter(alarmsList, this)
+
+        add_alarm_button.setOnClickListener {createAlarm()}
     }
 
     /**
@@ -37,5 +51,20 @@ class MainActivity : AppCompatActivity() {
         init {
             System.loadLibrary("native-lib")
         }
+    }
+
+    private fun createAlarm() {
+        val calendar = Calendar.getInstance()
+
+        TimePickerDialog(this,
+                this,
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                DateFormat.is24HourFormat(this)).show()
+
+    }
+
+    private fun toast(toastString: String) {
+        Toast.makeText(this, toastString, Toast.LENGTH_SHORT).show()
     }
 }
